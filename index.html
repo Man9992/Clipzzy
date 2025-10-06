@@ -1,0 +1,2809 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clipzy - TikTok-Style Video Platform</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script type="module">
+
+        // Import the functions you need from the SDKs you need
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        import { getStorage } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+
+        const firebaseConfig = {
+
+            apiKey: "AIzaSyDDmpF__K0xzkQSJ-buEBAaHjJseT9nAE8",
+
+            authDomain: "clipzy-ec330.firebaseapp.com",
+
+            projectId: "clipzy-ec330",
+
+            storageBucket: "clipzy-ec330.firebasestorage.app",
+
+            messagingSenderId: "227715602469",
+
+            appId: "1:227715602469:web:0002fcd4cb8835a170c7cc",
+
+            measurementId: "G-0M2ER8MS37"
+
+        };
+
+        // Initialize Firebase
+
+        const app = initializeApp(firebaseConfig);
+
+        const analytics = getAnalytics(app);
+
+        const db = getFirestore(app);
+
+        const storage = getStorage(app);
+
+        const auth = getAuth(app);
+
+        // Make Firebase modules available globally
+
+        window.firebaseModules = {
+
+            app,
+
+            analytics,
+
+            db,
+
+            storage,
+
+            auth
+
+        };
+
+    </script>
+
+    <style>
+
+        /* All your existing CSS styles remain exactly the same */
+
+        :root {
+
+            --primary: #ff0055;
+
+            --primary-dark: #e0004a;
+
+            --bg-dark: #000;
+
+            --bg-card: #1a1a1a;
+
+            --text-light: #fff;
+
+            --text-gray: #aaa;
+
+            --success: #00cc66;
+
+        }
+
+        
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+
+        
+
+        body {
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            background: var(--bg-dark);
+
+            color: var(--text-light);
+
+            overflow-x: hidden;
+
+            height: 100vh;
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+        
+
+        .header {
+
+            position: fixed;
+
+            top: 0;
+
+            width: 100%;
+
+            background: rgba(0, 0, 0, 0.95);
+
+            backdrop-filter: blur(10px);
+
+            z-index: 100;
+
+            padding: 15px 20px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        }
+
+        
+
+        .logo {
+
+            font-size: 24px;
+
+            font-weight: bold;
+
+            color: var(--text-light);
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+        
+
+        .logo span {
+
+            color: var(--primary);
+
+        }
+
+        
+
+        .logo-icon {
+
+            color: var(--primary);
+
+        }
+
+        
+
+        .menu-btn {
+
+            background: none;
+
+            border: none;
+
+            color: var(--text-light);
+
+            font-size: 20px;
+
+            cursor: pointer;
+
+            padding: 8px;
+
+            border-radius: 50%;
+
+            transition: background 0.3s;
+
+        }
+
+        
+
+        .menu-btn:hover {
+
+            background: rgba(255, 255, 255, 0.1);
+
+        }
+
+        
+
+        .feed-container {
+
+            flex: 1;
+
+            overflow-y: auto;
+
+            margin-top: 60px;
+
+            margin-bottom: 70px;
+
+            scroll-behavior: smooth;
+
+            scrollbar-width: none;
+
+            -ms-overflow-style: none;
+
+        }
+
+        
+
+        .feed-container::-webkit-scrollbar {
+
+            display: none;
+
+        }
+
+        
+
+        .video-card {
+
+            position: relative;
+
+            width: 100%;
+
+            height: 85vh;
+
+            margin-bottom: 10px;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            overflow: hidden;
+
+        }
+
+        
+
+        .video-player {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            border-radius: 0;
+
+        }
+
+        
+
+        .video-overlay {
+
+            position: absolute;
+
+            bottom: 0;
+
+            left: 0;
+
+            right: 0;
+
+            padding: 20px;
+
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+
+            color: white;
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+        
+
+        .video-actions {
+
+            position: absolute;
+
+            right: 15px;
+
+            bottom: 100px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            gap: 20px;
+
+        }
+
+        
+
+        .action-btn {
+
+            background: none;
+
+            border: none;
+
+            color: white;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            gap: 5px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+        }
+
+        
+
+        .action-icon {
+
+            width: 45px;
+
+            height: 45px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            background: rgba(0, 0, 0, 0.5);
+
+            backdrop-filter: blur(5px);
+
+            font-size: 20px;
+
+            transition: all 0.3s;
+
+        }
+
+        
+
+        .action-btn:hover .action-icon {
+
+            background: rgba(255, 255, 255, 0.2);
+
+            transform: scale(1.1);
+
+        }
+
+        
+
+        .like-btn.active .action-icon {
+
+            color: var(--primary);
+
+        }
+
+        
+
+        .video-info {
+
+            flex: 1;
+
+        }
+
+        
+
+        .video-caption {
+
+            font-size: 16px;
+
+            margin-bottom: 10px;
+
+            line-height: 1.4;
+
+        }
+
+        
+
+        .video-meta {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+
+            font-size: 14px;
+
+            color: var(--text-gray);
+
+        }
+
+        
+
+        .video-author {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            cursor: pointer;
+
+        }
+
+        
+
+        .avatar {
+
+            width: 30px;
+
+            height: 30px;
+
+            border-radius: 50%;
+
+            background: var(--primary);
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            font-size: 14px;
+
+        }
+
+        
+
+        .bottom-nav {
+
+            position: fixed;
+
+            bottom: 0;
+
+            width: 100%;
+
+            background: rgba(0, 0, 0, 0.95);
+
+            backdrop-filter: blur(10px);
+
+            display: flex;
+
+            justify-content: space-around;
+
+            padding: 12px 0;
+
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+            z-index: 100;
+
+        }
+
+        
+
+        .nav-btn {
+
+            background: none;
+
+            border: none;
+
+            color: var(--text-gray);
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            gap: 5px;
+
+            font-size: 12px;
+
+            cursor: pointer;
+
+            transition: color 0.3s;
+
+        }
+
+        
+
+        .nav-btn.active {
+
+            color: var(--primary);
+
+        }
+
+        
+
+        .nav-icon {
+
+            font-size: 20px;
+
+        }
+
+        
+
+        .upload-btn {
+
+            background: var(--primary);
+
+            color: white;
+
+            border: none;
+
+            border-radius: 50%;
+
+            width: 55px;
+
+            height: 55px;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            font-size: 20px;
+
+            cursor: pointer;
+
+            margin-top: -25px;
+
+            box-shadow: 0 4px 15px rgba(255, 0, 85, 0.4);
+
+            transition: all 0.3s;
+
+        }
+
+        
+
+        .upload-btn:hover {
+
+            background: var(--primary-dark);
+
+            transform: scale(1.05);
+
+        }
+
+        
+
+        .modal {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background: rgba(0, 0, 0, 0.9);
+
+            z-index: 1000;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+        
+
+        .modal-content {
+
+            background: var(--bg-card);
+
+            border-radius: 15px;
+
+            width: 90%;
+
+            max-width: 400px;
+
+            overflow: hidden;
+
+            animation: modalSlideIn 0.3s ease;
+
+        }
+
+        
+
+        @keyframes modalSlideIn {
+
+            from { transform: translateY(50px); opacity: 0; }
+
+            to { transform: translateY(0); opacity: 1; }
+
+        }
+
+        
+
+        .modal-header {
+
+            padding: 20px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+        
+
+        .modal-title {
+
+            font-size: 18px;
+
+            font-weight: 600;
+
+        }
+
+        
+
+        .close-btn {
+
+            background: none;
+
+            border: none;
+
+            color: var(--text-gray);
+
+            font-size: 20px;
+
+            cursor: pointer;
+
+        }
+
+        
+
+        .modal-body {
+
+            padding: 20px;
+
+        }
+
+        
+
+        .menu-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+
+            padding: 15px 0;
+
+            cursor: pointer;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+            transition: background 0.3s;
+
+        }
+
+        
+
+        .menu-item:last-child {
+
+            border-bottom: none;
+
+        }
+
+        
+
+        .menu-item:hover {
+
+            background: rgba(255, 255, 255, 0.05);
+
+        }
+
+        
+
+        .menu-icon {
+
+            width: 40px;
+
+            height: 40px;
+
+            border-radius: 10px;
+
+            background: rgba(255, 255, 255, 0.1);
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            font-size: 18px;
+
+        }
+
+        
+
+        .menu-text {
+
+            flex: 1;
+
+            font-size: 16px;
+
+        }
+
+        
+
+        .upload-area {
+
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+
+            border-radius: 10px;
+
+            padding: 30px;
+
+            text-align: center;
+
+            margin-bottom: 20px;
+
+            cursor: pointer;
+
+            transition: all 0.3s;
+
+            min-height: 150px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+        
+
+        .upload-area:hover {
+
+            border-color: var(--primary);
+
+            background: rgba(255, 255, 255, 0.05);
+
+        }
+
+        
+
+        .upload-area.video-selected {
+
+            border-color: var(--success);
+
+            background: rgba(0, 204, 102, 0.05);
+
+        }
+
+        
+
+        .upload-icon {
+
+            font-size: 40px;
+
+            color: var(--text-gray);
+
+            margin-bottom: 15px;
+
+        }
+
+        
+
+        .upload-text {
+
+            font-size: 16px;
+
+            margin-bottom: 10px;
+
+        }
+
+        
+
+        .upload-subtext {
+
+            font-size: 14px;
+
+            color: var(--text-gray);
+
+        }
+
+        
+
+        .form-group {
+
+            margin-bottom: 20px;
+
+        }
+
+        
+
+        .form-input {
+
+            width: 100%;
+
+            padding: 12px 15px;
+
+            background: rgba(255, 255, 255, 0.1);
+
+            border: 1px solid rgba(255, 255, 255, 0.2);
+
+            border-radius: 8px;
+
+            color: var(--text-light);
+
+            font-size: 16px;
+
+        }
+
+        
+
+        .form-input:focus {
+
+            outline: none;
+
+            border-color: var(--primary);
+
+        }
+
+        
+
+        .btn {
+
+            width: 100%;
+
+            padding: 12px;
+
+            background: var(--primary);
+
+            color: white;
+
+            border: none;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: background 0.3s;
+
+        }
+
+        
+
+        .btn:hover {
+
+            background: var(--primary-dark);
+
+        }
+
+        
+
+        .btn:disabled {
+
+            background: rgba(255, 255, 255, 0.1);
+
+            cursor: not-allowed;
+
+        }
+
+        
+
+        .btn-secondary {
+
+            background: rgba(255, 255, 255, 0.1);
+
+        }
+
+        
+
+        .btn-secondary:hover {
+
+            background: rgba(255, 255, 255, 0.2);
+
+        }
+
+        
+
+        .hidden {
+
+            display: none;
+
+        }
+
+        
+
+        .toast {
+
+            position: fixed;
+
+            bottom: 80px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            background: var(--bg-card);
+
+            color: var(--text-light);
+
+            padding: 12px 20px;
+
+            border-radius: 8px;
+
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+            z-index: 1000;
+
+            opacity: 0;
+
+            transition: opacity 0.3s;
+
+        }
+
+        
+
+        .toast.show {
+
+            opacity: 1;
+
+        }
+
+        
+
+        .empty-state {
+
+            text-align: center;
+
+            padding: 40px 20px;
+
+            color: var(--text-gray);
+
+            height: 100%;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+        
+
+        .empty-icon {
+
+            font-size: 60px;
+
+            margin-bottom: 20px;
+
+            opacity: 0.5;
+
+        }
+
+        
+
+        .empty-text {
+
+            font-size: 18px;
+
+            margin-bottom: 10px;
+
+        }
+
+        
+
+        .empty-subtext {
+
+            font-size: 14px;
+
+        }
+
+        
+
+        .user-modal {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background: rgba(0, 0, 0, 0.9);
+
+            z-index: 1000;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+        
+
+        .user-modal-content {
+
+            background: var(--bg-card);
+
+            border-radius: 15px;
+
+            width: 90%;
+
+            max-width: 350px;
+
+            overflow: hidden;
+
+            animation: modalSlideIn 0.3s ease;
+
+            text-align: center;
+
+            padding: 30px;
+
+        }
+
+        
+
+        .user-avatar {
+
+            width: 80px;
+
+            height: 80px;
+
+            border-radius: 50%;
+
+            background: var(--primary);
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            font-size: 30px;
+
+            margin: 0 auto 20px;
+
+        }
+
+        
+
+        .user-name {
+
+            font-size: 22px;
+
+            margin-bottom: 10px;
+
+        }
+
+        
+
+        .user-bio {
+
+            color: var(--text-gray);
+
+            margin-bottom: 20px;
+
+            font-size: 14px;
+
+        }
+
+        
+
+        .user-stats {
+
+            display: flex;
+
+            justify-content: space-around;
+
+            margin-bottom: 25px;
+
+        }
+
+        
+
+        .stat {
+
+            text-align: center;
+
+        }
+
+        
+
+        .stat-value {
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            margin-bottom: 5px;
+
+        }
+
+        
+
+        .stat-label {
+
+            font-size: 12px;
+
+            color: var(--text-gray);
+
+        }
+
+        
+
+        .progress-bar {
+
+            width: 100%;
+
+            height: 6px;
+
+            background: rgba(255, 255, 255, 0.1);
+
+            border-radius: 3px;
+
+            margin: 10px 0;
+
+            overflow: hidden;
+
+        }
+
+        
+
+        .progress-fill {
+
+            height: 100%;
+
+            background: var(--primary);
+
+            width: 0%;
+
+            transition: width 0.3s;
+
+        }
+
+        
+
+        .video-preview {
+
+            width: 100%;
+
+            max-height: 200px;
+
+            border-radius: 8px;
+
+            margin-top: 15px;
+
+        }
+
+        
+
+        .login-modal {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background: rgba(0, 0, 0, 0.9);
+
+            z-index: 1000;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+        
+
+        .login-content {
+
+            background: var(--bg-card);
+
+            border-radius: 15px;
+
+            width: 90%;
+
+            max-width: 350px;
+
+            overflow: hidden;
+
+            animation: modalSlideIn 0.3s ease;
+
+            text-align: center;
+
+            padding: 30px;
+
+        }
+
+        
+
+        .login-icon {
+
+            font-size: 50px;
+
+            color: var(--primary);
+
+            margin-bottom: 20px;
+
+        }
+
+        
+
+        .login-title {
+
+            font-size: 24px;
+
+            margin-bottom: 10px;
+
+        }
+
+        
+
+        .login-subtitle {
+
+            color: var(--text-gray);
+
+            margin-bottom: 25px;
+
+            font-size: 14px;
+
+        }
+
+        
+
+        .login-buttons {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 12px;
+
+        }
+
+        
+
+        .login-btn {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            padding: 12px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: all 0.3s;
+
+        }
+
+        
+
+        .login-btn.google {
+
+            background: white;
+
+            color: #333;
+
+        }
+
+        
+
+        .login-btn.google:hover {
+
+            background: #f0f0f0;
+
+        }
+
+        
+
+        .login-btn.anonymous {
+
+            background: rgba(255, 255, 255, 0.1);
+
+            color: white;
+
+        }
+
+        
+
+        .login-btn.anonymous:hover {
+
+            background: rgba(255, 255, 255, 0.2);
+
+        }
+
+        
+
+        .login-btn i {
+
+            font-size: 18px;
+
+        }
+
+        
+
+        @media (min-width: 768px) {
+
+            body {
+
+                max-width: 400px;
+
+                margin: 0 auto;
+
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+
+            }
+
+        }
+
+        
+
+        .loading {
+
+            display: inline-block;
+
+            width: 20px;
+
+            height: 20px;
+
+            border: 3px solid rgba(255,255,255,.3);
+
+            border-radius: 50%;
+
+            border-top-color: #fff;
+
+            animation: spin 1s ease-in-out infinite;
+
+        }
+
+        
+
+        @keyframes spin {
+
+            to { transform: rotate(360deg); }
+
+        }
+
+        
+
+        .double-tap-heart {
+
+            position: absolute;
+
+            top: 50%;
+
+            left: 50%;
+
+            transform: translate(-50%, -50%);
+
+            font-size: 80px;
+
+            color: var(--primary);
+
+            opacity: 0;
+
+            pointer-events: none;
+
+            z-index: 5;
+
+        }
+
+        
+
+        .double-tap-heart.animate {
+
+            animation: heartAnimation 0.8s ease-out;
+
+        }
+
+        
+
+        @keyframes heartAnimation {
+
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Header -->
+
+    <header class="header">
+
+        <div class="logo">
+
+            <i class="fas fa-play-circle logo-icon"></i>
+
+            <span>Clip</span>zy
+
+        </div>
+
+        <button class="menu-btn" id="menuBtn">
+
+            <i class="fas fa-ellipsis-v"></i>
+
+        </button>
+
+    </header>
+
+    <!-- Video Feed -->
+
+    <div class="feed-container" id="feedContainer">
+
+        <div class="empty-state" id="emptyState">
+
+            <div class="empty-icon">
+
+                <i class="fas fa-video"></i>
+
+            </div>
+
+            <div class="empty-text">No clips yet</div>
+
+            <div class="empty-subtext">Be the first to upload a clip!</div>
+
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+
+    <nav class="bottom-nav">
+
+        <button class="nav-btn active" data-page="home">
+
+            <i class="fas fa-home nav-icon"></i>
+
+            <span>Home</span>
+
+        </button>
+
+        <button class="nav-btn" data-page="discover">
+
+            <i class="fas fa-search nav-icon"></i>
+
+            <span>Discover</span>
+
+        </button>
+
+        <button class="upload-btn" id="uploadBtn">
+
+            <i class="fas fa-plus"></i>
+
+        </button>
+
+        <button class="nav-btn" data-page="notifications">
+
+            <i class="fas fa-heart nav-icon"></i>
+
+            <span>Likes</span>
+
+        </button>
+
+        <button class="nav-btn" data-page="profile">
+
+            <i class="fas fa-user nav-icon"></i>
+
+            <span>You</span>
+
+        </button>
+
+    </nav>
+
+    <!-- Menu Modal -->
+
+    <div class="modal" id="menuModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div class="modal-title">Menu</div>
+
+                <button class="close-btn" id="closeMenuBtn">
+
+                    <i class="fas fa-times"></i>
+
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="menu-item" id="uploadMenuBtn">
+
+                    <div class="menu-icon">
+
+                        <i class="fas fa-upload"></i>
+
+                    </div>
+
+                    <div class="menu-text">Upload Clip</div>
+
+                </div>
+
+                <div class="menu-item" id="recordMenuBtn">
+
+                    <div class="menu-icon">
+
+                        <i class="fas fa-camera"></i>
+
+                    </div>
+
+                    <div class="menu-text">Record Video</div>
+
+                </div>
+
+                <div class="menu-item" id="nicknameMenuBtn">
+
+                    <div class="menu-icon">
+
+                        <i class="fas fa-user-edit"></i>
+
+                    </div>
+
+                    <div class="menu-text">Set Nickname</div>
+
+                </div>
+
+                <div class="menu-item" id="shareMenuBtn">
+
+                    <div class="menu-icon">
+
+                        <i class="fas fa-share-alt"></i>
+
+                    </div>
+
+                    <div class="menu-text">Share App</div>
+
+                </div>
+
+                <div class="menu-item" id="logoutMenuBtn">
+
+                    <div class="menu-icon">
+
+                        <i class="fas fa-sign-out-alt"></i>
+
+                    </div>
+
+                    <div class="menu-text">Logout</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Upload Modal -->
+
+    <div class="modal" id="uploadModal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div class="modal-title">Upload Clip</div>
+
+                <button class="close-btn" id="closeUploadBtn">
+
+                    <i class="fas fa-times"></i>
+
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="upload-area" id="uploadArea">
+
+                    <div class="upload-icon">
+
+                        <i class="fas fa-cloud-upload-alt"></i>
+
+                    </div>
+
+                    <div class="upload-text">Select a video to upload</div>
+
+                    <div class="upload-subtext">MP4, MOV, AVI up to 15 seconds</div>
+
+                </div>
+
+                <input type="file" id="fileInput" accept="video/*" class="hidden">
+
+                <div class="form-group">
+
+                    <input type="text" class="form-input" id="captionInput" placeholder="Add a caption...">
+
+                </div>
+
+                <div class="progress-bar">
+
+                    <div class="progress-fill" id="uploadProgress"></div>
+
+                </div>
+
+                <button class="btn" id="submitUploadBtn">Upload Clip</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Login Modal -->
+
+    <div class="login-modal" id="loginModal">
+
+        <div class="login-content">
+
+            <div class="login-icon">
+
+                <i class="fas fa-play-circle"></i>
+
+            </div>
+
+            <div class="login-title">Welcome to Clipzy</div>
+
+            <div class="login-subtitle">Share your best moments with the world</div>
+
+            <div class="login-buttons">
+
+                <button class="login-btn google" id="googleLoginBtn">
+
+                    <i class="fab fa-google"></i>
+
+                    Continue with Google
+
+                </button>
+
+                <button class="login-btn anonymous" id="anonymousLoginBtn">
+
+                    <i class="fas fa-user-secret"></i>
+
+                    Continue Anonymously
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Toast Notification -->
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+
+        // Wait for Firebase modules to be available
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Get Firebase modules from global window object
+
+            const { db, storage, auth } = window.firebaseModules;
+
+            
+
+            // Import additional Firebase functions we need
+
+            const { 
+
+                collection, 
+
+                addDoc, 
+
+                orderBy, 
+
+                onSnapshot, 
+
+                serverTimestamp, 
+
+                increment, 
+
+                arrayUnion, 
+
+                arrayRemove,
+
+                query,
+
+                doc,
+
+                getDoc,
+
+                updateDoc
+
+            } = firebaseFirestore;
+
+            
+
+            const { 
+
+                ref, 
+
+                uploadBytesResumable, 
+
+                getDownloadURL 
+
+            } = firebaseStorage;
+
+            
+
+            const { 
+
+                GoogleAuthProvider, 
+
+                signInWithPopup, 
+
+                signInAnonymously, 
+
+                signOut,
+
+                onAuthStateChanged
+
+            } = firebaseAuth;
+
+            // DOM Elements
+
+            const feedContainer = document.getElementById('feedContainer');
+
+            const emptyState = document.getElementById('emptyState');
+
+            const menuBtn = document.getElementById('menuBtn');
+
+            const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+            const menuModal = document.getElementById('menuModal');
+
+            const uploadBtn = document.getElementById('uploadBtn');
+
+            const uploadModal = document.getElementById('uploadModal');
+
+            const closeUploadBtn = document.getElementById('closeUploadBtn');
+
+            const uploadArea = document.getElementById('uploadArea');
+
+            const fileInput = document.getElementById('fileInput');
+
+            const captionInput = document.getElementById('captionInput');
+
+            const submitUploadBtn = document.getElementById('submitUploadBtn');
+
+            const uploadProgress = document.getElementById('uploadProgress');
+
+            const uploadMenuBtn = document.getElementById('uploadMenuBtn');
+
+            const recordMenuBtn = document.getElementById('recordMenuBtn');
+
+            const nicknameMenuBtn = document.getElementById('nicknameMenuBtn');
+
+            const shareMenuBtn = document.getElementById('shareMenuBtn');
+
+            const logoutMenuBtn = document.getElementById('logoutMenuBtn');
+
+            const loginModal = document.getElementById('loginModal');
+
+            const googleLoginBtn = document.getElementById('googleLoginBtn');
+
+            const anonymousLoginBtn = document.getElementById('anonymousLoginBtn');
+
+            const toast = document.getElementById('toast');
+
+            // App State
+
+            let currentUser = null;
+
+            let selectedFile = null;
+
+            let currentVideo = null;
+
+            let videosListener = null;
+
+            // Event Listeners
+
+            menuBtn.addEventListener('click', () => menuModal.style.display = 'flex');
+
+            closeMenuBtn.addEventListener('click', () => menuModal.style.display = 'none');
+
+            uploadBtn.addEventListener('click', () => {
+
+                if (!currentUser) {
+
+                    showLoginModal();
+
+                    return;
+
+                }
+
+                uploadModal.style.display = 'flex';
+
+            });
+
+            closeUploadBtn.addEventListener('click', () => {
+
+                uploadModal.style.display = 'none';
+
+                resetUploadForm();
+
+            });
+
+            uploadMenuBtn.addEventListener('click', () => {
+
+                menuModal.style.display = 'none';
+
+                if (!currentUser) {
+
+                    showLoginModal();
+
+                    return;
+
+                }
+
+                uploadModal.style.display = 'flex';
+
+            });
+
+            recordMenuBtn.addEventListener('click', () => {
+
+                menuModal.style.display = 'none';
+
+                showToast('Recording feature coming soon!');
+
+            });
+
+            nicknameMenuBtn.addEventListener('click', () => {
+
+                menuModal.style.display = 'none';
+
+                showToast('Nickname feature coming soon!');
+
+            });
+
+            shareMenuBtn.addEventListener('click', () => {
+
+                menuModal.style.display = 'none';
+
+                if (navigator.share) {
+
+                    navigator.share({
+
+                        title: 'Clipzy',
+
+                        text: 'Check out this awesome video sharing app!',
+
+                        url: window.location.href
+
+                    });
+
+                } else {
+
+                    showToast('Share this app: ' + window.location.href);
+
+                }
+
+            });
+
+            logoutMenuBtn.addEventListener('click', () => {
+
+                menuModal.style.display = 'none';
+
+                logout();
+
+            });
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', handleFileSelect);
+
+            submitUploadBtn.addEventListener('click', uploadVideo);
+
+            // Authentication
+
+            googleLoginBtn.addEventListener('click', signInWithGoogle);
+
+            anonymousLoginBtn.addEventListener('click', signInAnonymously);
+
+            // Auth State Listener
+
+            onAuthStateChanged(auth, user => {
+
+                if (user) {
+
+                    currentUser = user;
+
+                    loginModal.style.display = 'none';
+
+                    showToast(`Welcome ${user.isAnonymous ? 'Anonymous User' : user.displayName || 'User'}!`);
+
+                    loadVideos();
+
+                } else {
+
+                    currentUser = null;
+
+                    showLoginModal();
+
+                }
+
+            });
+
+            // Handle file selection
+
+            function handleFileSelect(e) {
+
+                const file = e.target.files[0];
+
+                if (!file) return;
+
+                // Check if file is a video
+
+                if (!file.type.startsWith('video/')) {
+
+                    showToast('Please select a video file');
+
+                    return;
+
+                }
+
+                // Check file size (max 50MB)
+
+                if (file.size > 50 * 1024 * 1024) {
+
+                    showToast('Video must be smaller than 50MB');
+
+                    return;
+
+                }
+
+                selectedFile = file;
+
+                uploadArea.classList.add('video-selected');
+
+                uploadArea.innerHTML = `
+
+                    <div class="upload-icon">
+
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
+
+                    </div>
+
+                    <div class="upload-text">${file.name}</div>
+
+                    <div class="upload-subtext">Click to change</div>
+
+                `;
+
+                // Create a preview of the video
+
+                const videoUrl = URL.createObjectURL(file);
+
+                const preview = document.createElement('video');
+
+                preview.src = videoUrl;
+
+                preview.controls = true;
+
+                preview.className = 'video-preview';
+
+                uploadArea.appendChild(preview);
+
+            }
+
+            // Upload video to Firebase
+
+            async function uploadVideo() {
+
+                if (!selectedFile) {
+
+                    showToast('Please select a video first');
+
+                    return;
+
+                }
+
+                if (!currentUser) {
+
+                    showToast('Please log in to upload videos');
+
+                    return;
+
+                }
+
+                const caption = captionInput.value.trim() || 'Check out my clip!';
+
+                submitUploadBtn.disabled = true;
+
+                submitUploadBtn.innerHTML = '<div class="loading"></div> Uploading...';
+
+                try {
+
+                    // Create a reference to the video file
+
+                    const videoRef = ref(storage, `videos/${currentUser.uid}/${Date.now()}_${selectedFile.name}`);
+
+                    // Upload the file
+
+                    const uploadTask = uploadBytesResumable(videoRef, selectedFile);
+
+                    // Monitor upload progress
+
+                    uploadTask.on('state_changed', 
+
+                        (snapshot) => {
+
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+
+                            uploadProgress.style.width = progress + '%';
+
+                        },
+
+                        (error) => {
+
+                            console.error('Upload error:', error);
+
+                            showToast('Upload failed: ' + error.message);
+
+                            submitUploadBtn.disabled = false;
+
+                            submitUploadBtn.textContent = 'Upload Clip';
+
+                        },
+
+                        async () => {
+
+                            // Upload completed successfully
+
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+                            // Save video metadata to Firestore
+
+                            await addDoc(collection(db, 'videos'), {
+
+                                videoUrl: downloadURL,
+
+                                caption: caption,
+
+                                userId: currentUser.uid,
+
+                                userDisplayName: currentUser.displayName || 'Anonymous User',
+
+                                userPhotoURL: currentUser.photoURL || null,
+
+                                likes: 0,
+
+                                likesBy: [],
+
+                                timestamp: serverTimestamp(),
+
+                                comments: []
+
+                            });
+
+                            showToast('Video uploaded successfully!');
+
+                            uploadModal.style.display = 'none';
+
+                            resetUploadForm();
+
+                        }
+
+                    );
+
+                } catch (error) {
+
+                    console.error('Upload error:', error);
+
+                    showToast('Upload failed: ' + error.message);
+
+                    submitUploadBtn.disabled = false;
+
+                    submitUploadBtn.textContent = 'Upload Clip';
+
+                }
+
+            }
+
+            // Reset upload form
+
+            function resetUploadForm() {
+
+                selectedFile = null;
+
+                fileInput.value = '';
+
+                captionInput.value = '';
+
+                uploadArea.classList.remove('video-selected');
+
+                uploadArea.innerHTML = `
+
+                    <div class="upload-icon">
+
+                        <i class="fas fa-cloud-upload-alt"></i>
+
+                    </div>
+
+                    <div class="upload-text">Select a video to upload</div>
+
+                    <div class="upload-subtext">MP4, MOV, AVI up to 15 seconds</div>
+
+                `;
+
+                uploadProgress.style.width = '0%';
+
+                submitUploadBtn.disabled = false;
+
+                submitUploadBtn.textContent = 'Upload Clip';
+
+            }
+
+            // Load videos from Firestore
+
+            function loadVideos() {
+
+                // Clear existing listener if any
+
+                if (videosListener) {
+
+                    videosListener();
+
+                }
+
+                feedContainer.innerHTML = '<div class="empty-state"><div class="empty-icon"><i class="fas fa-spinner fa-spin"></i></div><div class="empty-text">Loading videos...</div></div>';
+
+                
+
+                // Set up real-time listener for videos
+
+                const q = query(collection(db, 'videos'), orderBy('timestamp', 'desc'));
+
+                
+
+                videosListener = onSnapshot(q, snapshot => {
+
+                    if (snapshot.empty) {
+
+                        emptyState.style.display = 'flex';
+
+                        feedContainer.innerHTML = '';
+
+                        feedContainer.appendChild(emptyState);
+
+                        return;
+
+                    }
+
+                    
+
+                    emptyState.style.display = 'none';
+
+                    feedContainer.innerHTML = '';
+
+                    
+
+                    snapshot.forEach(doc => {
+
+                        const videoData = doc.data();
+
+                        const videoCard = createVideoCard(videoData, doc.id);
+
+                        feedContainer.appendChild(videoCard);
+
+                    });
+
+                }, error => {
+
+                    console.error('Error loading videos:', error);
+
+                    showToast('Error loading videos: ' + error.message);
+
+                });
+
+            }
+
+            // Create video card element
+
+            function createVideoCard(videoData, videoId) {
+
+                const videoCard = document.createElement('div');
+
+                videoCard.className = 'video-card';
+
+                // Format timestamp
+
+                const timestamp = videoData.timestamp ? 
+
+                    videoData.timestamp.toDate().toLocaleDateString() : 'Recently';
+
+                    
+
+                videoCard.innerHTML = `
+
+                    <div class="double-tap-heart" id="heart-${videoId}">
+
+                        <i class="fas fa-heart"></i>
+
+                    </div>
+
+                    <video class="video-player" loop muted playsinline>
+
+                        <source src="${videoData.videoUrl}" type="video/mp4">
+
+                        Your browser does not support the video tag.
+
+                    </video>
+
+                    <div class="video-overlay">
+
+                        <div class="video-info">
+
+                            <div class="video-caption">${videoData.caption}</div>
+
+                            <div class="video-meta">
+
+                                <div class="video-author">
+
+                                    <div class="avatar">
+
+                                        ${videoData.userPhotoURL ? 
+
+                                            `<img src="${videoData.userPhotoURL}" alt="${videoData.userDisplayName}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : 
+
+                                            `<i class="fas fa-user"></i>`
+
+                                        }
+
+                                    </div>
+
+                                    <span>${videoData.userDisplayName}</span>
+
+                                </div>
+
+                                <div class="video-date">${timestamp}</div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="video-actions">
+
+                        <button class="action-btn like-btn" data-id="${videoId}" data-liked="${videoData.likesBy && videoData.likesBy.includes(currentUser.uid)}">
+
+                            <div class="action-icon">
+
+                                <i class="fas fa-heart"></i>
+
+                            </div>
+
+                            <span class="action-count">${videoData.likes || 0}</span>
+
+                        </button>
+
+                        <button class="action-btn">
+
+                            <div class="action-icon">
+
+                                <i class="fas fa-comment"></i>
+
+                            </div>
+
+                            <span class="action-count">${videoData.comments ? videoData.comments.length : 0}</span>
+
+                        </button>
+
+                        <button class="action-btn share-btn" data-id="${videoId}">
+
+                            <div class="action-icon">
+
+                                <i class="fas fa-share"></i>
+
+                            </div>
+
+                            <span class="action-count">Share</span>
+
+                        </button>
+
+                    </div>
+
+                `;
+
+                // Add video interaction
+
+                const video = videoCard.querySelector('.video-player');
+
+                const likeBtn = videoCard.querySelector('.like-btn');
+
+                const shareBtn = videoCard.querySelector('.share-btn');
+
+                const heart = videoCard.querySelector('.double-tap-heart');
+
+                // Check if user already liked this video
+
+                if (likeBtn.getAttribute('data-liked') === 'true') {
+
+                    likeBtn.classList.add('active');
+
+                }
+
+                video.addEventListener('click', () => {
+
+                    if (currentVideo && currentVideo !== video) {
+
+                        currentVideo.pause();
+
+                    }
+
+                    if (video.paused) {
+
+                        video.play();
+
+                        currentVideo = video;
+
+                    } else {
+
+                        video.pause();
+
+                        currentVideo = null;
+
+                    }
+
+                });
+
+                // Double tap to like
+
+                let lastTap = 0;
+
+                videoCard.addEventListener('touchend', (e) => {
+
+                    const currentTime = new Date().getTime();
+
+                    const tapLength = currentTime - lastTap;
+
+                    if (tapLength < 500 && tapLength > 0) {
+
+                        // Double tap detected
+
+                        handleLike(videoId, likeBtn, heart);
+
+                        e.preventDefault();
+
+                    }
+
+                    lastTap = currentTime;
+
+                });
+
+                likeBtn.addEventListener('click', () => handleLike(videoId, likeBtn, heart));
+
+                shareBtn.addEventListener('click', () => {
+
+                    if (navigator.share) {
+
+                        navigator.share({
+
+                            title: 'Clipzy Video',
+
+                            text: videoData.caption,
+
+                            url: window.location.href + '?video=' + videoId
+
+                        });
+
+                    } else {
+
+                        showToast('Share this video with friends!');
+
+                    }
+
+                });
+
+                // Auto-play when in viewport
+
+                const observer = new IntersectionObserver((entries) => {
+
+                    entries.forEach(entry => {
+
+                        if (entry.isIntersecting) {
+
+                            if (currentVideo && currentVideo !== video) {
+
+                                currentVideo.pause();
+
+                            }
+
+                            video.play();
+
+                            currentVideo = video;
+
+                        } else {
+
+                            if (currentVideo === video) {
+
+                                video.pause();
+
+                                currentVideo = null;
+
+                            }
+
+                        }
+
+                    });
+
+                }, { threshold: 0.7 });
+
+                observer.observe(videoCard);
+
+                return videoCard;
+
+            }
+
+            // Handle like functionality
+
+            async function handleLike(videoId, likeBtn, heart) {
+
+                if (!currentUser) {
+
+                    showToast('Please log in to like videos');
+
+                    return;
+
+                }
+
+                try {
+
+                    const videoRef = doc(db, 'videos', videoId);
+
+                    const videoDoc = await getDoc(videoRef);
+
+                    if (!videoDoc.exists()) {
+
+                        showToast('Video not found');
+
+                        return;
+
+                    }
+
+                    const videoData = videoDoc.data();
+
+                    const likesBy = videoData.likesBy || [];
+
+                    const isLiked = likesBy.includes(currentUser.uid);
+
+                    if (isLiked) {
+
+                        // Unlike the video
+
+                        await updateDoc(videoRef, {
+
+                            likes: increment(-1),
+
+                            likesBy: arrayRemove(currentUser.uid)
+
+                        });
+
+                        likeBtn.classList.remove('active');
+
+                        const countElement = likeBtn.querySelector('.action-count');
+
+                        countElement.textContent = parseInt(countElement.textContent) - 1;
+
+                    } else {
+
+                        // Like the video
+
+                        await updateDoc(videoRef, {
+
+                            likes: increment(1),
+
+                            likesBy: arrayUnion(currentUser.uid)
+
+                        });
+
+                        likeBtn.classList.add('active');
+
+                        const countElement = likeBtn.querySelector('.action-count');
+
+                        countElement.textContent = parseInt(countElement.textContent) + 1;
+
+                        // Show heart animation for double tap
+
+                        if (heart) {
+
+                            heart.classList.add('animate');
+
+                            setTimeout(() => {
+
+                                heart.classList.remove('animate');
+
+                            }, 800);
+
+                        }
+
+                    }
+
+                } catch (error) {
+
+                    console.error('Error liking video:', error);
+
+                    showToast('Error liking video: ' + error.message);
+
+                }
+
+            }
+
+            // Authentication functions
+
+            function signInWithGoogle() {
+
+                const provider = new GoogleAuthProvider();
+
+                signInWithPopup(auth, provider)
+
+                    .catch(error => {
+
+                        console.error('Google sign-in error:', error);
+
+                        showToast('Google sign-in failed: ' + error.message);
+
+                    });
+
+            }
+
+            function signInAnonymously() {
+
+                signInAnonymously(auth)
+
+                    .catch(error => {
+
+                        console.error('Anonymous sign-in error:', error);
+
+                        showToast('Anonymous sign-in failed: ' + error.message);
+
+                    });
+
+            }
+
+            function logout() {
+
+                signOut(auth)
+
+                    .then(() => {
+
+                        showToast('Logged out successfully');
+
+                    })
+
+                    .catch(error => {
+
+                        console.error('Logout error:', error);
+
+                        showToast('Logout failed: ' + error.message);
+
+                    });
+
+            }
+
+            function showLoginModal() {
+
+                loginModal.style.display = 'flex';
+
+            }
+
+            // Show toast notification
+
+            function showToast(message) {
+
+                toast.textContent = message;
+
+                toast.classList.add('show');
+
+                setTimeout(() => {
+
+                    toast.classList.remove('show');
+
+                }, 3000);
+
+            }
+
+            // Initialize the app
+
+            function initApp() {
+
+                // Check if user is already logged in
+
+                if (auth.currentUser) {
+
+                    currentUser = auth.currentUser;
+
+                    loadVideos();
+
+                } else {
+
+                    showLoginModal();
+
+                }
+
+                // Add some sample videos if the database is empty
+
+                addSampleVideosIfNeeded();
+
+            }
+
+            // Add sample videos if the database is empty (for demo purposes)
+
+            async function addSampleVideosIfNeeded() {
+
+                const videosSnapshot = await getDocs(query(collection(db, 'videos'), limit(1)));
+
+                if (videosSnapshot.empty) {
+
+                    // Add sample videos
+
+                    const sampleVideos = [
+
+                        {
+
+                            videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+
+                            caption: 'Check out these amazing joyrides! 🚗',
+
+                            userId: 'sample_user_1',
+
+                            userDisplayName: 'Adventure Seeker',
+
+                            userPhotoURL: null,
+
+                            likes: 42,
+
+                            likesBy: [],
+
+                            timestamp: serverTimestamp(),
+
+                            comments: []
+
+                        },
+
+                        {
+
+                            videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+
+                            caption: 'Fire and fun! Never a dull moment 🔥',
+
+                            userId: 'sample_user_2',
+
+                            userDisplayName: 'Fire Enthusiast',
+
+                            userPhotoURL: null,
+
+                            likes: 28,
+
+                            likesBy: [],
+
+                            timestamp: serverTimestamp(),
+
+                            comments: []
+
+                        },
+
+                        {
+
+                            videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+
+                            caption: 'Escape to paradise 🌴',
+
+                            userId: 'sample_user_3',
+
+                            userDisplayName: 'Travel Lover',
+
+                            userPhotoURL: null,
+
+                            likes: 65,
+
+                            likesBy: [],
+
+                            timestamp: serverTimestamp(),
+
+                            comments: []
+
+                        }
+
+                    ];
+
+                    // Add sample videos to Firestore
+
+                    sampleVideos.forEach(video => {
+
+                        addDoc(collection(db, 'videos'), video);
+
+                    });
+
+                }
+
+            }
+
+            // Initialize the app when the page loads
+
+            window.addEventListener('DOMContentLoaded', initApp);
+
+        });
+
+    </script>
+
+</body>
+
+</html>
